@@ -28,7 +28,14 @@ h1{font-family:Georgia,serif;font-size:clamp(48px,6vw,78px);line-height:.98;font
 .section-sub{text-align:center;color:#7a7166;margin-bottom:45px}
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
 .card{padding:0 0 30px;border:1px solid #e1d6c5;background:#fdfbf7;min-height:350px;overflow:hidden;border-radius:3px;box-shadow:0 8px 25px rgba(48,38,25,.05)}
-.card-photo{width:100%;height:205px;display:block;object-fit:cover}
+.card-photo{
+  width:100%;
+  height:205px;
+  display:block;
+  object-fit:contain;
+  background:#f5f0e7;
+  padding:10px;
+}
 .card-content{padding:25px 28px 0}
 .icon{font-size:24px;margin-bottom:12px;opacity:.9}
 .card h3{font-family:Georgia,serif;font-size:25px;font-weight:500;margin-bottom:12px;color:#2c2419}
