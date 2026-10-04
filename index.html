@@ -193,8 +193,12 @@ async function loadFrameFocusSheet() {
       const text = card.querySelector('.card p');
 
       if (photo && image) {
-        image.src = photo;
-        image.loading = 'lazy';
+  image.onerror = function () {
+    this.src = image.dataset.fallback;
+  };
+  image.dataset.fallback = image.src;
+  image.src = photo;
+  image.loading = 'lazy';
       }
       if (description && text) text.textContent = description;
     });
