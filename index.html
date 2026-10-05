@@ -166,49 +166,177 @@ function normaliseCategory(value) {
 async function loadFrameFocusSheet() {
   try {
     const response = await fetch(FRAME_FOCUS_SHEET_CSV, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Google Sheet could not be loaded');
+
+    if (!response.ok) {
+      throw new Error('Google Sheet could not be loaded');
+    }
+
     const csv = await response.text();
     const products = parseFrameFocusCSV(csv);
+
     if (!products.length) return;
 
     const cards = [...document.querySelectorAll('.cards .card')];
-    const targets = [
-      { names: ['prescriptionglasses', 'prescription', 'eyeglasses'], index: 0 },
-      { names: ['bluecut', 'bluecutglasses', 'bluecutlenses'], index: 1 },
-      { names: ['sunpro', 'sunglasses', 'sunglass'], index: 2 }
+
+    const categoryMap = [
+      {
+        index: 0,
+        categories: ['prescription', 'prescriptionglasses', 'eyeglasses']
+      },
+      {
+        index: 1,
+        categories: ['bluecut', 'bluecutglasses', 'bluecutlenses']
+      },
+      {
+        index: 2,
+        categories: ['sunpro', 'sunglasses', 'sunglass']
+      }
     ];
 
-    targets.forEach(target => {
-      const match = products.find(product => {
-        const category = normaliseCategory(product['category']);
-        const name = normaliseCategory(product['product name']);
-        return target.names.includes(category) || target.names.includes(name);
-      });
-      const card = cards[target.index];
-      if (!match || !card) return;
+    function driveImage(url) {
+      if (!url) return '';
 
-      const photo = match['photo'];
-      const description = match['description'];
-      const image = card.querySelector('.card-photo');
-      const text = card.querySelector('.card p');
+      const match = url.match(/\/d\/([^/]+)/);
 
-      if (photo && image) {
-  image.onerror = function () {
-    this.src = image.dataset.fallback;
-  };
-  image.dataset.fallback = image.src;
-  image.src = photo;
-  image.loading = 'lazy';
+      if (match && match[1]) {
+        return 'https://drive.google.com/uc?export=view&id=' + match[1];
       }
-      if (description && text) text.textContent = description;
+
+      return url;
+    }
+
+    categoryMap.forEach(target => {
+
+      const card = cards[target.index];
+
+      if (!card) return;
+
+      const matchingProducts = products.filter(product => {
+
+        const category =
+          normaliseCategory(product['category']);
+
+        return target.categories.includes(category);
+      });
+
+      if (!matchingProducts.length) return;
+
+      let productContainer =
+        card.querySelector('.sheet-products');
+
+      if (!productContainer) {
+        productContainer = document.createElement('div');
+        productContainer.className = 'sheet-products';
+
+        productContainer.style.cssText =
+          'display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:22px;';
+
+        card.appendChild(productContainer);
+      }
+
+      productContainer.innerHTML = '';
+
+      matchingProducts.forEach(product => {
+
+        const productName =
+          product['product name'] || 'Frame & Focus Product';
+
+        const category =
+          product['category'] || '';
+
+        const subcategory =
+          product['subcategory'] || '';
+
+        const price =
+          product['price'] || '';
+
+        const description =
+          product['description'] || '';
+
+        const photo =
+          driveImage(product['photo']);
+
+        const productBox =
+          document.createElement('div');
+
+        productBox.className = 'sheet-product';
+
+        productBox.dataset.category =
+          normaliseCategory(category);
+
+        productBox.dataset.subcategory =
+          normaliseCategory(subcategory);
+
+        productBox.style.cssText =
+          'background:#fffaf1;border:1px solid #d8c49a;border-radius:14px;padding:14px;box-shadow:0 4px 15px rgba(0,0,0,.08);';
+
+        productBox.innerHTML = `
+          ${
+            photo
+            ? `
+              <img
+                src="${photo}"
+                alt="${productName}"
+                style="width:100%;height:180px;object-fit:contain;border-radius:10px;background:#f5f0e7;"
+                loading="lazy"
+                onerror="this.style.display='none';"
+              >
+            `
+            : ''
+          }
+
+          <h3 style="margin:12px 0 6px;color:#211d17;font-size:18px;">
+            ${productName}
+          </h3>
+
+          ${
+            price
+            ? `
+              <div style="font-weight:bold;color:#9b7b3f;font-size:17px;margin-bottom:6px;">
+                Rs. ${price}
+              </div>
+            `
+            : ''
+          }
+
+          ${
+            subcategory
+            ? `
+              <div style="font-size:13px;color:#75684f;margin-bottom:7px;">
+                ${subcategory}
+              </div>
+            `
+            : ''
+          }
+
+          ${
+            description
+            ? `
+              <p style="font-size:14px;line-height:1.5;color:#514a3f;">
+                ${description}
+              </p>
+            `
+            : ''
+          }
+        `;
+
+        productContainer.appendChild(productBox);
+      });
     });
+
   } catch (error) {
-    // If the sheet is unavailable, the original homepage content remains visible.
-    console.warn('Frame & Focus Google Sheet connection:', error);
+
+    console.warn(
+      'Frame & Focus Google Sheet connection:',
+      error
+    );
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadFrameFocusSheet);
+document.addEventListener(
+  'DOMContentLoaded',
+  loadFrameFocusSheet
+);
 </script>
 <style>
 .subcategory-box {
