@@ -270,5 +270,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const buttons = document.querySelectorAll(".subcategory-btn");
+
+  buttons.forEach(button => {
+
+    button.addEventListener("click", function () {
+
+      const clicked = this.textContent.trim().toLowerCase();
+
+      // Active button change
+      const parent = this.parentElement;
+      parent.querySelectorAll(".subcategory-btn").forEach(btn => {
+        btn.classList.remove("active");
+      });
+      this.classList.add("active");
+
+      // Product cards created by the Google Sheet system
+      const products = document.querySelectorAll(".sheet-product");
+
+      products.forEach(product => {
+        const subcategory =
+          (product.dataset.subcategory || "").toLowerCase().trim();
+
+        const category =
+          (product.dataset.category || "").toLowerCase().trim();
+
+        if (
+          clicked === "all" ||
+          subcategory === clicked ||
+          category === clicked
+        ) {
+          product.style.display = "";
+        } else {
+          product.style.display = "none";
+        }
+      });
+
+    });
+
+  });
+
+});
+  </script>
 </body>
 </html>
